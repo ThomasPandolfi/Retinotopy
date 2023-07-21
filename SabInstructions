@@ -4,7 +4,8 @@ Some nomenclature
 	CWEXP = Clockwise + expanding ring
 	comb = all 4 runs combined
 	
-
+In order to run any .sh file, just run in terminal ./__thefile__.sh
+In order to run any python program, in terminal python3 ./__thefile__.py
 
 
 
