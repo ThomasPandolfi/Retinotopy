@@ -1,0 +1,109 @@
+Some nomenclature
+	CW and CCW = clockwise and counterclockwise
+	EXP and CONT = expanding and contracting rings
+	CWEXP = Clockwise + expanding ring
+	comb = all 4 runs combined
+	
+
+
+
+
+
+Put all Subject folders on the desktop
+	Name them something simple and consistent, I rec SUBJ05 for example
+
+In these folders, there should be one folder for MRI Pre, and one for MRI Post
+	Name them consistently, MRIPre and MRIPost are my usual choice
+In the MRIPre or MRIPost folder, there should be a folder with ALL of the dicom images in each of their scan folders (call it predcm)
+The directory should look like
+Desktop --> SUBJ05 --> MRIPre --> predcm --> Each of the scan folders
+
+
+
+
+The important files needed for script running are in a folder on the desktop (Scripting_for_DellLinux)
+In the folder:
+	Combination.py
+		Used for combining the wedge runs together, Used for combining Rings, Used for Combining all 4, Used for making hybrids (CWEXP)
+	norm.py
+		Used for filtering the data with a lowpass / highpass filter
+	R2.py
+		Main analysis python script for displaying the calculated visual fields
+	subdetails.sh
+		IMPORTANT - this is where you edit the important differences in the subject you are running
+		The following variables should be changed if needed
+		fresurName='SMTEST'        This should be the name you registered the participant as with freesurfer, (initial then subjnumber then pre or post)
+		niiLocation='/home/thomaszeph/Desktop/Stacey_MRI/test/analysis/main' (should be desktop/subjectfolder/mripre or post / analysis / main
+		GauSigTemp=70 #temporal smoothing parameter
+		GauSigSpat=3 #Spatial smoothing parameter
+		LFcut=0.001 #Low frequency cutoff
+		HFcut=0.30 #high frequency cutoff
+		
+		
+	combinedruns.sh
+		The master shell script for doing everything at once. In here are commented sections of code for running section by section
+			if you want to go section by section just highlight and copy code, paste into terminal - often better than running all at once in case of errors
+	Realign_script.m
+		Matlab script to adjust the mri files for movement
+			
+
+
+
+The pipeline of combinedruns.sh is as follows:
+	Start freesurfer
+	Unpack all the dcm files into a nice and neat directory structure
+	Run freesurfers recon-all to register the participant and segment the cortex
+		Likely this never really works properly on stroke victims (has to be modified manually - i literally have no idea how to)
+	Source the subdetails.sh file, make a bunch of important variables and create a directory
+	Run Combination.py
+		If you already combined files, comment out this line to not waste time
+	Run realign_script.m
+		If you already combined files and realigned them, comment out this line
+	Run norm.py
+		If you are already happy with your filtering parameters (ONLY low pass / high pass), comment this out
+	Create a config file for the analysis (look for the following lines)
+		echo varNumX = 23 >> $ConfigLocation
+		echo varNumY = 23 >> $ConfigLocation         (23 is standard (number of degrees modeled, you can do more (46, but takes way longer)))
+		echo varNumPrfSizes = 14 >> $ConfigLocation    (number of sizes of the field modeled, 14 is PROBABLY ok)
+	
+		echo lstPathPng = [\'/home/tp/Desktop/Scripting_For_DellLinux/pyprf/${actualOrder[${value}]}/frame_\'] >> $ConfigLocation
+			Directory of where to find the stim frames (take a look at the directory pyprf in the scripting file to confirm)
+	
+	
+	Runs the analysis (CALLED PYPRF) and saves everything (takes a WHILE to do analysis on the comb file)
+
+
+If you don't want to do analysis on some of the files, like for example you DONT want to analyze the comb file, look for this line
+	for value in 0 1 2 3 4 5 6 7; do
+		and remove the numbers you DONT want to do
+		009 011 013 015 comb 00wedges 00rings 00cwexp
+		0 = CW 
+		1 = CCW
+		2 = EXP
+		3 = CONT
+		4 = Combined
+		5 = Wedges combined
+		6 = Rings Combined
+		7 = CW + EXP
+		
+Also note, running the analysis of the combined pyprf file is significantly longer than all of the other runs COMBINED in time length due to file size
+
+
+Issues that you will need to workaround
+	When combining files the voxel intensity of the last timeseries step  of the FIRST FILE is often different than the voxel intensity of hte first timeseries step of the SECOND FILE. This results in a modeling error which can be potentially very large
+	If you can't segment the T1 anatomical correctly, you cant utilize any of the freesurfer features for analysis, including doing analysis on the MRI surface and not in volume space.
+	the lowpass and highpass cutoffs are arbitrary, although its better to be more conservative with filters
+		I commonly used 0.005 and 0.5 or so, should only slightly smooth data which is the goal
+	
+
+
+
+
+
+
+
+	
+	
+		
+		
+		
