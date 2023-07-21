@@ -7,9 +7,6 @@ Some nomenclature
 In order to run any .sh file, just run in terminal ./__thefile__.sh
 In order to run any python program, in terminal python3 ./__thefile__.py
 
-
-
-
 Put all Subject folders on the desktop
 	Name them something simple and consistent, I rec SUBJ05 for example
 
@@ -48,10 +45,14 @@ In the folder:
 		Matlab script to adjust the mri files for movement
 			
 
+####################################################################################################################################################################
+#### For running the main retino analysis
+####################################################################################################################################################################
+
 
 
 The pipeline of combinedruns.sh is as follows:
-	Start freesurfer
+	Starts freesurfer
 	Unpack all the dcm files into a nice and neat directory structure
 	Run freesurfers recon-all to register the participant and segment the cortex
 		Likely this never really works properly on stroke victims (has to be modified manually - i literally have no idea how to)
@@ -99,9 +100,27 @@ Issues that you will need to workaround
 
 
 
+Results can be visualized with FSLeyes (from terminal type fsleyes)
+In order to view the anatomical and freesurfer registration with tksurfer, copy each of these blocks into terminal, and replace TP00 with the subject initials and number
+	This displays the T1 with white matter, segments out the skull, and applies shaders to see the segmented brain
 
+freeview -v \
+TP00/mri/T1.mgz \
+TP00/mri/wm.mgz \
+TP00/mri/brainmask.mgz \
+TP00/mri/aseg.mgz:colormap=lut:opacity=0.2 \
+-f TP00/surf/lh.white:edgecolor=blue \
+TP00/surf/lh.pial:edgecolor=red \
+TP00/surf/rh.white:edgecolor=blue \
+TP00/surf/rh.pial:edgecolor=red
 
-
+freeview -f  TP00/surf/lh.pial:annot=aparc.annot:name=pial_aparc:visible=0 \
+TP00/surf/lh.pial:annot=aparc.a2009s.annot:name=pial_aparc_des:visible=0 \
+TP00/surf/lh.inflated:overlay=lh.thickness:overlay_threshold=0.1,3::name=inflated_thickness:visible=0 \
+TP00/surf/lh.inflated:visible=0 \
+TP00/surf/lh.white:visible=0 \
+TP00/surf/lh.pial \
+--viewport 3d
 
 	
 	
